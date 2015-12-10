@@ -68,7 +68,7 @@
 struct apci3501_private {
 	unsigned long amcc;
 	unsigned long tcw;
-	struct task_struct *tsk_Current;
+	struct task_struct *tsk_current;
 	unsigned char timer_mode;
 };
 

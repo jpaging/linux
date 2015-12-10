@@ -4,30 +4,30 @@
  * Author: Michal Dobes <dobes@tesnet.cz>
  *
  *  Hardware driver for Advantech PCI DIO cards.
-*/
+ */
 /*
-Driver: adv_pci_dio
-Description: Advantech PCI-1730, PCI-1733, PCI-1734, PCI-1735U,
-	PCI-1736UP, PCI-1739U, PCI-1750, PCI-1751, PCI-1752,
-	PCI-1753/E, PCI-1754, PCI-1756, PCI-1760, PCI-1762
-Author: Michal Dobes <dobes@tesnet.cz>
-Devices: [Advantech] PCI-1730 (adv_pci_dio), PCI-1733,
-  PCI-1734, PCI-1735U, PCI-1736UP, PCI-1739U, PCI-1750,
-  PCI-1751, PCI-1752, PCI-1753,
-  PCI-1753+PCI-1753E, PCI-1754, PCI-1756,
-  PCI-1760, PCI-1762
-Status: untested
-Updated: Mon, 09 Jan 2012 12:40:46 +0000
-
-This driver supports now only insn interface for DI/DO/DIO.
-
-Configuration options:
-  [0] - PCI bus of device (optional)
-  [1] - PCI slot of device (optional)
-	If bus/slot is not specified, the first available PCI
-	device will be used.
-
-*/
+ * Driver: adv_pci_dio
+ * Description: Advantech PCI-1730, PCI-1733, PCI-1734, PCI-1735U,
+ * 	PCI-1736UP, PCI-1739U, PCI-1750, PCI-1751, PCI-1752,
+ * 	PCI-1753/E, PCI-1754, PCI-1756, PCI-1760, PCI-1762
+ * Author: Michal Dobes <dobes@tesnet.cz>
+ * Devices: [Advantech] PCI-1730 (adv_pci_dio), PCI-1733,
+ * PCI-1734, PCI-1735U, PCI-1736UP, PCI-1739U, PCI-1750,
+ *   PCI-1751, PCI-1752, PCI-1753,
+ *   PCI-1753+PCI-1753E, PCI-1754, PCI-1756,
+ *   PCI-1760, PCI-1762
+ * Status: untested
+ * Updated: Mon, 09 Jan 2012 12:40:46 +0000
+ * 
+ * This driver supports now only insn interface for DI/DO/DIO.
+ * 
+ * Configuration options:
+ *   [0] - PCI bus of device (optional)
+ *   [1] - PCI slot of device (optional)
+ * 	If bus/slot is not specified, the first available PCI
+ * 	device will be used.
+ * 
+ */
 
 #include <linux/module.h>
 #include <linux/delay.h>
@@ -58,7 +58,8 @@ enum hw_io_access {
 #define MAX_DI_SUBDEVS	2	/* max number of DI subdevices per card */
 #define MAX_DO_SUBDEVS	2	/* max number of DO subdevices per card */
 #define MAX_DIO_SUBDEVG	2	/* max number of DIO subdevices group per
-				 * card */
+							 * card
+							 */
 
 #define PCIDIO_MAINREG	   2	/* main I/O region for all Advantech cards? */
 
@@ -71,7 +72,8 @@ enum hw_io_access {
 #define PCI1733_IDI	   0	/* R:   Isolated digital input  0-31 */
 #define	PCI1730_3_INT_EN	0x08	/* R/W: enable/disable interrupts */
 #define	PCI1730_3_INT_RF	0x0c	/* R/W: set falling/raising edge for
-					 * interrupts */
+									 * interrupts
+									 */
 #define	PCI1730_3_INT_CLR	0x10	/* R/W: clear interrupts */
 #define PCI1734_IDO	   0	/* W:   Isolated digital output 0-31 */
 #define PCI173x_BOARDID	   4	/* R:   Board I/D switch for 1730/3/4 */
@@ -157,65 +159,86 @@ enum hw_io_access {
 
 /*  PCI-1760 mailbox commands */
 #define CMD_ClearIMB2		0x00	/* Clear IMB2 status and return actual
-					 * DI status in IMB3 */
+									 * DI status in IMB3
+									 */
 #define CMD_SetRelaysOutput	0x01	/* Set relay output from OMB0 */
 #define CMD_GetRelaysStatus	0x02	/* Get relay status to IMB0 */
 #define CMD_ReadCurrentStatus	0x07	/* Read the current status of the
-					 * register in OMB0, result in IMB0 */
+										 * register in OMB0, result in IMB0
+										 */
 #define CMD_ReadFirmwareVersion	0x0e	/* Read the firmware ver., result in
-					 * IMB1.IMB0 */
+										 * IMB1.IMB0
+										 */
 #define CMD_ReadHardwareVersion	0x0f	/* Read the hardware ver., result in
-					 * IMB1.IMB0 */
+										 * IMB1.IMB0
+										 */
 #define CMD_EnableIDIFilters	0x20	/* Enable IDI filters based on bits in
-					 * OMB0 */
+										 * OMB0 */
 #define CMD_EnableIDIPatternMatch 0x21	/* Enable IDI pattern match based on
-					 * bits in OMB0 */
+										 * bits in OMB0 */
 #define CMD_SetIDIPatternMatch	0x22	/* Enable IDI pattern match based on
-					 * bits in OMB0 */
+										 * bits in OMB0 */
 #define CMD_EnableIDICounters	0x28	/* Enable IDI counters based on bits in
-					 * OMB0 */
+										 * OMB0 */
 #define CMD_ResetIDICounters	0x29	/* Reset IDI counters based on bits in
-					 * OMB0 to its reset values */
+										 * OMB0 to its reset values */
 #define CMD_OverflowIDICounters	0x2a	/* Enable IDI counters overflow
-					 * interrupts  based on bits in OMB0 */
+										 * interrupts  based on bits in OMB0 */
 #define CMD_MatchIntIDICounters	0x2b	/* Enable IDI counters match value
-					 * interrupts  based on bits in OMB0 */
+										 * interrupts  based on bits in OMB0 */
 #define CMD_EdgeIDICounters	0x2c	/* Set IDI up counters count edge (bit=0
-					 * - rising, =1 - falling) */
+										 * - rising, =1 - falling) */
 #define CMD_GetIDICntCurValue	0x2f	/* Read IDI{OMB0} up counter current
-					 * value */
+										 * value
+										 */
 #define CMD_SetIDI0CntResetValue 0x40	/* Set IDI0 Counter Reset Value
-					 * 256*OMB1+OMB0 */
+										 * 256*OMB1+OMB0
+										 */
 #define CMD_SetIDI1CntResetValue 0x41	/* Set IDI1 Counter Reset Value
-					 * 256*OMB1+OMB0 */
+										 * 256*OMB1+OMB0
+										 */
 #define CMD_SetIDI2CntResetValue 0x42	/* Set IDI2 Counter Reset Value
-					 * 256*OMB1+OMB0 */
+										 * 256*OMB1+OMB0
+										 */
 #define CMD_SetIDI3CntResetValue 0x43	/* Set IDI3 Counter Reset Value
-					 * 256*OMB1+OMB0 */
+										 * 256*OMB1+OMB0
+										 */
 #define CMD_SetIDI4CntResetValue 0x44	/* Set IDI4 Counter Reset Value
-					 * 256*OMB1+OMB0 */
+										 * 256*OMB1+OMB0
+										 */
 #define CMD_SetIDI5CntResetValue 0x45	/* Set IDI5 Counter Reset Value
-					 * 256*OMB1+OMB0 */
+										 * 256*OMB1+OMB0
+										 */
 #define CMD_SetIDI6CntResetValue 0x46	/* Set IDI6 Counter Reset Value
-					 * 256*OMB1+OMB0 */
+										 * 256*OMB1+OMB0
+										 */
 #define CMD_SetIDI7CntResetValue 0x47	/* Set IDI7 Counter Reset Value
-					 * 256*OMB1+OMB0 */
+										 * 256*OMB1+OMB0
+										 */
 #define CMD_SetIDI0CntMatchValue 0x48	/* Set IDI0 Counter Match Value
-					 * 256*OMB1+OMB0 */
+										 * 256*OMB1+OMB0
+										 */
 #define CMD_SetIDI1CntMatchValue 0x49	/* Set IDI1 Counter Match Value
-					 * 256*OMB1+OMB0 */
+										 * 256*OMB1+OMB0
+										 */
 #define CMD_SetIDI2CntMatchValue 0x4a	/* Set IDI2 Counter Match Value
-					 * 256*OMB1+OMB0 */
+										 * 256*OMB1+OMB0
+										 */
 #define CMD_SetIDI3CntMatchValue 0x4b	/* Set IDI3 Counter Match Value
-					 * 256*OMB1+OMB0 */
+										 * 256*OMB1+OMB0
+										 */
 #define CMD_SetIDI4CntMatchValue 0x4c	/* Set IDI4 Counter Match Value
-					 * 256*OMB1+OMB0 */
+										 * 256*OMB1+OMB0
+										 */
 #define CMD_SetIDI5CntMatchValue 0x4d	/* Set IDI5 Counter Match Value
-					 * 256*OMB1+OMB0 */
+										 * 256*OMB1+OMB0
+										 */
 #define CMD_SetIDI6CntMatchValue 0x4e	/* Set IDI6 Counter Match Value
-					 * 256*OMB1+OMB0 */
+										 * 256*OMB1+OMB0
+										 */
 #define CMD_SetIDI7CntMatchValue 0x4f	/* Set IDI7 Counter Match Value
-					 * 256*OMB1+OMB0 */
+										 * 256*OMB1+OMB0
+										 */
 
 #define OMBCMD_RETRY	0x03	/* 3 times try request before error */
 
